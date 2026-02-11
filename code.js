@@ -110,7 +110,23 @@ function parseDom(dom) {
   const root = (dom && dom.dom) || (dom && dom.nodes) || dom;
   if (!root) return { textByKey, sectionOrder };
 
+  if (Array.isArray(root)) {
+    for (const node of root) {
+      traverse(node, null, (n, currentSection) => {
+        return handleNode(n, currentSection, textByKey, sectionOrder);
+      });
+    }
+    return { textByKey, sectionOrder };
+  }
+
   traverse(root, null, (node, currentSection) => {
+    return handleNode(node, currentSection, textByKey, sectionOrder);
+  });
+
+  return { textByKey, sectionOrder };
+}
+
+function handleNode(node, currentSection, textByKey, sectionOrder) {
     const attrs = getAttrs(node);
     const sectionName = attrs[FIGMA_SECTION_ATTR];
     if (sectionName && !sectionOrder.includes(sectionName)) {
@@ -125,9 +141,6 @@ function parseDom(dom) {
     }
 
     return currentSection;
-  });
-
-  return { textByKey, sectionOrder };
 }
 
 function getAttrs(node) {
@@ -163,6 +176,7 @@ function traverse(node, currentSection, visitor) {
 function extractText(node) {
   if (!node) return '';
   if (typeof node.text === 'string') return node.text;
+  if (node.text && typeof node.text.text === 'string') return node.text.text;
   if (typeof node.value === 'string') return node.value;
 
   const children = node.children || node.childNodes || node.nodes || [];
