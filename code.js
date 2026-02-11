@@ -62,10 +62,6 @@ figma.ui.onmessage = async (msg) => {
     const parsed = parseDom(dom);
     const keyCount = Object.keys(parsed.textByKey).length;
     const sectionsPreview = parsed.sectionOrder.slice(0, 5).join(', ');
-    figma.ui.postMessage({
-      type: 'status',
-      message: `Parsed ${keyCount} keys. Sections: ${sectionsPreview || 'none'}.`,
-    });
 
     figma.ui.postMessage({ type: 'status', message: 'Placing sections...' });
     await ensureSections(parsed.sectionOrder);
@@ -76,7 +72,7 @@ figma.ui.onmessage = async (msg) => {
 
     figma.ui.postMessage({
       type: 'status',
-      message: `Done. Updated ${updated} text nodes.`,
+      message: `Done. Updated ${updated} text nodes. Parsed ${keyCount} keys. Sections: ${sectionsPreview || 'none'}.`,
     });
   } catch (err) {
     figma.ui.postMessage({ type: 'status', message: `Error: ${err.message}` });
@@ -115,7 +111,7 @@ function parseDom(dom) {
   if (!root) return { textByKey, sectionOrder };
 
   traverse(root, null, (node, currentSection) => {
-    const attrs = (node && node.attributes) || (node && node.attrs) || {};
+    const attrs = getAttrs(node);
     const sectionName = attrs[FIGMA_SECTION_ATTR];
     if (sectionName && !sectionOrder.includes(sectionName)) {
       sectionOrder.push(sectionName);
@@ -132,6 +128,23 @@ function parseDom(dom) {
   });
 
   return { textByKey, sectionOrder };
+}
+
+function getAttrs(node) {
+  if (!node) return {};
+  if (node.attributes && Array.isArray(node.attributes)) {
+    const map = {};
+    for (const item of node.attributes) {
+      if (!item) continue;
+      if (item.name && typeof item.value === 'string') {
+        map[item.name] = item.value;
+      }
+    }
+    return map;
+  }
+  if (node.attributes && typeof node.attributes === 'object') return node.attributes;
+  if (node.attrs && typeof node.attrs === 'object') return node.attrs;
+  return {};
 }
 
 function traverse(node, currentSection, visitor) {
