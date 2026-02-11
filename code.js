@@ -2,7 +2,7 @@
 // TODO: Fill in BACKEND_URL and WEBFLOW_PAGE_ID.
 // TODO: Define section/component mapping and data-figma-key attributes in Webflow.
 
-const BACKEND_URL = "https://YOUR-RENDER-URL"; // Render backend base URL
+const BACKEND_URL = "https://figma-webflow-sync.onrender.com"; // Render backend base URL
 const WEBFLOW_PAGE_ID = "698b0dfd793838e9c699e7d9"; // Static page ID
 
 // Attribute names in Webflow

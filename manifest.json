@@ -8,8 +8,7 @@
   "networkAccess": {
     "allowedDomains": [
       "https://api.webflow.com",
-      "https://*.onrender.com",
-      "https://onrender.com"
+      "https://figma-webflow-sync.onrender.com"
     ]
   }
 }
