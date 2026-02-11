@@ -9,6 +9,9 @@
     </style>
   </head>
   <body>
+    <div style="margin-bottom: 8px;">
+      <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
+    </div>
     <button id="sync">Sync from Webflow</button>
     <button id="get-key">Get component key</button>
     <div id="status">Ready.</div>
@@ -16,8 +19,9 @@
     <script>
       const statusEl = document.getElementById('status');
       document.getElementById('sync').onclick = () => {
+        const url = document.getElementById('url').value.trim();
         statusEl.textContent = 'Syncing...';
-        parent.postMessage({ pluginMessage: { type: 'sync' } }, '*');
+        parent.postMessage({ pluginMessage: { type: 'sync', url } }, '*');
       };
       document.getElementById('get-key').onclick = () => {
         statusEl.textContent = 'Select a component or instance...';

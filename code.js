@@ -1,9 +1,8 @@
 // Webflow -> Figma sync (MVP)
-// TODO: Fill in BACKEND_URL and WEBFLOW_PAGE_ID.
+// TODO: Fill in BACKEND_URL.
 // TODO: Define section/component mapping and data-figma-key attributes in Webflow.
 
 const BACKEND_URL = "https://figma-webflow-sync.onrender.com"; // Render backend base URL
-const WEBFLOW_PAGE_ID = "698b0dfd793838e9c699e7d9"; // Static page ID
 
 // Attribute names in Webflow
 const FIGMA_KEY_ATTR = "data-figma-key";
@@ -52,12 +51,20 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type !== 'sync') return;
 
   try {
-    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1 || !WEBFLOW_PAGE_ID) {
-      throw new Error('Set BACKEND_URL and WEBFLOW_PAGE_ID in code.js');
+    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
+      throw new Error('Set BACKEND_URL in code.js');
     }
 
+    const pageUrl = msg.url;
+    if (!pageUrl) {
+      throw new Error('Paste a Webflow page URL in the input field.');
+    }
+
+    figma.ui.postMessage({ type: 'status', message: 'Resolving page ID...' });
+    const pageId = await resolvePageId(BACKEND_URL, pageUrl);
+
     figma.ui.postMessage({ type: 'status', message: 'Fetching Webflow DOM...' });
-    const dom = await fetchWebflowDom(BACKEND_URL, WEBFLOW_PAGE_ID);
+    const dom = await fetchWebflowDom(BACKEND_URL, pageId);
 
     figma.ui.postMessage({ type: 'status', message: 'Parsing content...' });
     const parsed = parseDom(dom);
@@ -103,6 +110,20 @@ async function fetchWebflowDom(baseUrl, pageId) {
   }
 
   return await res.json();
+}
+
+async function resolvePageId(baseUrl, pageUrl) {
+  const cleanedBase =
+    baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
+  const url = cleanedBase + '/resolve?url=' + encodeURIComponent(pageUrl);
+  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Resolve error ${res.status}: ${text}`);
+  }
+  const data = await res.json();
+  if (!data.pageId) throw new Error('Resolve error: pageId not found');
+  return data.pageId;
 }
 
 function parseDom(dom) {
