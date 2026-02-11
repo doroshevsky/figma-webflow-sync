@@ -80,7 +80,10 @@ figma.ui.onmessage = async (msg) => {
 async function fetchWebflowDom(baseUrl, pageId) {
   let res;
   try {
-    res = await fetch(`${baseUrl.replace(/\\/$/, '')}/dom?pageId=${encodeURIComponent(pageId)}`, {
+    const cleanedBase =
+      baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
+    const url = cleanedBase + '/dom?pageId=' + encodeURIComponent(pageId);
+    res = await fetch(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
