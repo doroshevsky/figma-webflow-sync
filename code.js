@@ -16,6 +16,7 @@ const SECTION_COMPONENT_KEYS = {
 };
 
 const STACK_GAP = 120; // px between sections when reordering
+const REBUILD_SECTIONS = true; // when true, remove existing sections and re-import
 
 figma.showUI(__html__, { width: 260, height: 120 });
 
@@ -62,9 +63,10 @@ figma.ui.onmessage = async (msg) => {
     const parsed = parseDom(dom);
     const keyCount = Object.keys(parsed.textByKey).length;
     const sectionsPreview = parsed.sectionOrder.slice(0, 5).join(', ');
+    const sectionCount = parsed.sectionOrder.length;
 
     figma.ui.postMessage({ type: 'status', message: 'Placing sections...' });
-    await ensureSections(parsed.sectionOrder);
+    await ensureSections(parsed.sectionOrder, REBUILD_SECTIONS);
     reorderSections(parsed.sectionOrder);
 
     figma.ui.postMessage({ type: 'status', message: 'Updating text...' });
@@ -72,7 +74,7 @@ figma.ui.onmessage = async (msg) => {
 
     figma.ui.postMessage({
       type: 'status',
-      message: `Done. Updated ${updated} text nodes. Parsed ${keyCount} keys. Sections: ${sectionsPreview || 'none'}.`,
+      message: `Done. Updated ${updated} text nodes. Parsed ${keyCount} keys. Sections: ${sectionCount ? sectionsPreview : 'none'}.`,
     });
   } catch (err) {
     figma.ui.postMessage({ type: 'status', message: `Error: ${err.message}` });
@@ -185,7 +187,7 @@ function extractText(node) {
   return children.map(extractText).join('');
 }
 
-async function ensureSections(sectionOrder) {
+async function ensureSections(sectionOrder, rebuild) {
   if (!sectionOrder.length) return;
 
   const page = figma.currentPage;
@@ -196,8 +198,15 @@ async function ensureSections(sectionOrder) {
     }
   }
 
+  if (rebuild) {
+    for (const name of sectionOrder) {
+      const node = existingByName.get(name);
+      if (node) node.remove();
+    }
+  }
+
   for (const name of sectionOrder) {
-    if (existingByName.has(name)) continue;
+    if (!rebuild && existingByName.has(name)) continue;
     const key = SECTION_COMPONENT_KEYS[name];
     if (!key) continue;
 
