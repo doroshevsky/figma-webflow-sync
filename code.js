@@ -60,6 +60,12 @@ figma.ui.onmessage = async (msg) => {
 
     figma.ui.postMessage({ type: 'status', message: 'Parsing content...' });
     const parsed = parseDom(dom);
+    const keyCount = Object.keys(parsed.textByKey).length;
+    const sectionsPreview = parsed.sectionOrder.slice(0, 5).join(', ');
+    figma.ui.postMessage({
+      type: 'status',
+      message: `Parsed ${keyCount} keys. Sections: ${sectionsPreview || 'none'}.`,
+    });
 
     figma.ui.postMessage({ type: 'status', message: 'Placing sections...' });
     await ensureSections(parsed.sectionOrder);
