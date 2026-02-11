@@ -1,0 +1,15 @@
+{
+  "name": "Webflow Sync",
+  "id": "webflow-sync",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://api.webflow.com",
+      "https://*.onrender.com",
+      "https://onrender.com"
+    ]
+  }
+}
