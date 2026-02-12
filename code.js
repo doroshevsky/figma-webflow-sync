@@ -159,6 +159,9 @@ async function ensureAuthorized(baseUrl) {
 }
 
 async function fetchWithTimeout(url, options, timeoutMs) {
+  if (typeof AbortController === 'undefined') {
+    return fetch(url, options || {});
+  }
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
