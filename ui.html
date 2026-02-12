@@ -19,6 +19,8 @@
       const statusEl = document.getElementById('status');
       const primaryBtn = document.getElementById('primary');
       let isAuthorized = false;
+      let pendingAuthOpen = false;
+      let authUrl = '';
 
       function updatePrimary() {
         primaryBtn.textContent = isAuthorized ? 'Sync from Webflow' : 'Connect Webflow';
@@ -27,6 +29,7 @@
       primaryBtn.onclick = () => {
         if (!isAuthorized) {
           statusEl.textContent = 'Opening Webflow auth...';
+          pendingAuthOpen = true;
           parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
           return;
         }
@@ -46,6 +49,13 @@
         if (msg.type === 'auth-status') {
           isAuthorized = !!msg.authorized;
           updatePrimary();
+        }
+        if (msg.type === 'auth-link') {
+          authUrl = msg.url || '';
+          if (pendingAuthOpen && authUrl) {
+            pendingAuthOpen = false;
+            window.open(authUrl, '_blank');
+          }
         }
       };
 

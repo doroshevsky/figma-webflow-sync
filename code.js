@@ -43,7 +43,7 @@ figma.ui.onmessage = async (msg) => {
     const cleanedBase =
       BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
     const authUrl = `${cleanedBase}/auth/start`;
-    figma.openURL(authUrl);
+    figma.ui.postMessage({ type: 'auth-link', url: authUrl });
     figma.ui.postMessage({ type: 'status', message: 'Waiting for Webflow authorization...' });
     pollAuthStatus(cleanedBase, 0);
     return;
