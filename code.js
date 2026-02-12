@@ -38,6 +38,20 @@ figma.ui.onmessage = async (msg) => {
     return;
   }
 
+  if (msg.type === 'check-auth') {
+    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
+      figma.ui.postMessage({ type: 'auth-status', authorized: false });
+      return;
+    }
+    try {
+      const authorized = await checkAuthorized(BACKEND_URL);
+      figma.ui.postMessage({ type: 'auth-status', authorized });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'auth-status', authorized: false });
+    }
+    return;
+  }
+
   if (msg.type === 'connect') {
     if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
       figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });

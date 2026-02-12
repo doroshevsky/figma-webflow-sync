@@ -16,7 +16,7 @@
        style="display:inline-block; color:#000; text-decoration:underline; font-size:13px;">
       Connect Webflow
     </a>
-    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v11</div>
+    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v12</div>
     <button id="sync-btn" style="display:none;">Sync from Webflow</button>
     <div id="status">Ready.</div>
 
@@ -66,6 +66,10 @@
           updatePrimary();
         }
       };
+
+      setInterval(() => {
+        parent.postMessage({ pluginMessage: { type: 'check-auth' } }, '*');
+      }, 15000);
 
       parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
     </script>
