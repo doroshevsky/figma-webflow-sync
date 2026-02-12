@@ -12,54 +12,39 @@
     <div id="url-wrap" style="margin-bottom: 8px; display:none;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
-    <a id="auth-link-btn" href="#" target="_blank" rel="noopener noreferrer"
-       style="display:inline-block; padding:8px 12px; border:1px solid #333; border-radius:4px; color:#000; text-decoration:none; background:#fff; text-align:center; width: fit-content;">
+    <a id="auth-link" href="https://figma-webflow-sync.onrender.com/auth/start" target="_blank" rel="noopener noreferrer"
+       style="display:inline-block; color:#000; text-decoration:underline; font-size:13px;">
       Connect Webflow
     </a>
-    <div id="auth-hint" style="margin-top:6px; font-size:11px; color:#666;">
-      If the window doesn't open, click this link:
-      <a id="auth-link" href="https://figma-webflow-sync.onrender.com/auth/start" target="_blank" rel="noopener noreferrer">Open Webflow Auth</a>
-    </div>
-    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v9</div>
+    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v10</div>
     <button id="sync-btn" style="display:none;">Sync from Webflow</button>
     <div id="status">Ready.</div>
 
     <script>
       const statusEl = document.getElementById('status');
-      const authBtn = document.getElementById('auth-link-btn');
+      const authLink = document.getElementById('auth-link');
       const syncBtn = document.getElementById('sync-btn');
       const urlWrap = document.getElementById('url-wrap');
-      const authLink = document.getElementById('auth-link');
       let isAuthorized = false;
       let authUrl = '';
 
       function updatePrimary() {
         if (isAuthorized) {
-          authBtn.style.display = 'none';
+          authLink.style.display = 'none';
           syncBtn.style.display = 'inline-block';
           urlWrap.style.display = 'block';
         } else {
           syncBtn.style.display = 'none';
-          authBtn.style.display = 'inline-block';
+          authLink.style.display = 'inline-block';
           urlWrap.style.display = 'none';
-          authBtn.setAttribute('href', authUrl || '#');
-          authBtn.style.pointerEvents = authUrl ? 'auto' : 'none';
+          authLink.setAttribute('href', authUrl || 'https://figma-webflow-sync.onrender.com/auth/start');
         }
       }
-
-      authBtn.onclick = () => {
-        statusEl.textContent = 'Opening Webflow auth...';
-        parent.postMessage({ pluginMessage: { type: 'start-auth' } }, '*');
-      };
 
       syncBtn.onclick = () => {
         const url = document.getElementById('url').value.trim();
         statusEl.textContent = 'Syncing...';
         parent.postMessage({ pluginMessage: { type: 'sync', url } }, '*');
-      };
-      document.getElementById('get-key').onclick = () => {
-        statusEl.textContent = 'Select a component or instance...';
-        parent.postMessage({ pluginMessage: { type: 'get-key' } }, '*');
       };
 
       window.onmessage = (event) => {
