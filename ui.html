@@ -12,7 +12,9 @@
     <div style="margin-bottom: 8px;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
-    <button id="primary">Connect Webflow</button>
+    <a id="auth-anchor" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+      <button id="primary">Connect Webflow</button>
+    </a>
     <div id="status">Ready.</div>
 
     <script>
@@ -23,13 +25,20 @@
 
       function updatePrimary() {
         primaryBtn.textContent = isAuthorized ? 'Sync from Webflow' : 'Connect Webflow';
+        const anchor = document.getElementById('auth-anchor');
+        if (isAuthorized) {
+          anchor.setAttribute('href', '#');
+          anchor.style.pointerEvents = 'none';
+        } else {
+          anchor.setAttribute('href', authUrl || '#');
+          anchor.style.pointerEvents = authUrl ? 'auto' : 'none';
+        }
       }
 
       primaryBtn.onclick = () => {
         if (!isAuthorized) {
           statusEl.textContent = 'Opening Webflow auth...';
           if (authUrl) {
-            window.open(authUrl, '_blank');
             parent.postMessage({ pluginMessage: { type: 'start-auth' } }, '*');
           } else {
             parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
@@ -55,6 +64,7 @@
         }
         if (msg.type === 'auth-link') {
           authUrl = msg.url || '';
+          updatePrimary();
         }
       };
 
