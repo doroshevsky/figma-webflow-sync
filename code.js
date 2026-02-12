@@ -20,7 +20,22 @@ const REBUILD_SECTIONS = true; // when true, remove existing sections and re-imp
 figma.showUI(__html__, { width: 260, height: 120 });
 
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'connect' || msg.type === 'open-auth') {
+  if (msg.type === 'init') {
+    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
+      figma.ui.postMessage({ type: 'auth-status', authorized: false });
+      figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });
+      return;
+    }
+    try {
+      const authorized = await checkAuthorized(BACKEND_URL);
+      figma.ui.postMessage({ type: 'auth-status', authorized });
+    } catch {
+      figma.ui.postMessage({ type: 'auth-status', authorized: false });
+    }
+    return;
+  }
+
+  if (msg.type === 'connect') {
     if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
       figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });
       return;
@@ -28,7 +43,6 @@ figma.ui.onmessage = async (msg) => {
     const cleanedBase =
       BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
     const authUrl = `${cleanedBase}/auth/start`;
-    figma.ui.postMessage({ type: 'auth-link', url: authUrl });
     figma.openURL(authUrl);
     figma.ui.postMessage({ type: 'status', message: 'Waiting for Webflow authorization...' });
     pollAuthStatus(cleanedBase, 0);
@@ -158,6 +172,16 @@ async function ensureAuthorized(baseUrl) {
   }
 }
 
+async function checkAuthorized(baseUrl) {
+  const cleanedBase =
+    baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
+  const url = cleanedBase + '/auth/status';
+  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) return false;
+  const data = await res.json();
+  return !!data.authorized;
+}
+
 async function fetchWithTimeout(url, options, timeoutMs) {
   if (typeof AbortController === 'undefined') {
     return fetch(url, options || {});
@@ -188,6 +212,7 @@ function pollAuthStatus(baseUrl, attempt) {
     .then((data) => {
       if (data && data.authorized) {
         figma.ui.postMessage({ type: 'status', message: 'Webflow connected. You can sync now.' });
+        figma.ui.postMessage({ type: 'auth-status', authorized: true });
         return;
       }
       setTimeout(() => pollAuthStatus(baseUrl, attempt + 1), 1000);

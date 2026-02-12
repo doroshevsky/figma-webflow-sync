@@ -12,28 +12,24 @@
     <div style="margin-bottom: 8px;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
-    <button id="connect">Connect Webflow</button>
-    <button id="open-auth">Open Auth Link</button>
-    <button id="sync">Sync from Webflow</button>
-    <button id="get-key">Get component key</button>
+    <button id="primary">Connect Webflow</button>
     <div id="status">Ready.</div>
-    <div id="auth-link" style="margin-top:6px; font-size:11px; color:#666;"></div>
-    <div id="auth-link-btn" style="margin-top:6px; display:none;">
-      <button id="open-auth-link">Open Auth in Browser</button>
-    </div>
 
     <script>
       const statusEl = document.getElementById('status');
-      document.getElementById('connect').onclick = () => {
-        statusEl.textContent = 'Opening Webflow auth...';
-        parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
-      };
-      document.getElementById('open-auth').onclick = () => {
-        statusEl.textContent = 'Opening Webflow auth...';
-        parent.postMessage({ pluginMessage: { type: 'open-auth' } }, '*');
-      };
+      const primaryBtn = document.getElementById('primary');
+      let isAuthorized = false;
 
-      document.getElementById('sync').onclick = () => {
+      function updatePrimary() {
+        primaryBtn.textContent = isAuthorized ? 'Sync from Webflow' : 'Connect Webflow';
+      }
+
+      primaryBtn.onclick = () => {
+        if (!isAuthorized) {
+          statusEl.textContent = 'Opening Webflow auth...';
+          parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
+          return;
+        }
         const url = document.getElementById('url').value.trim();
         statusEl.textContent = 'Syncing...';
         parent.postMessage({ pluginMessage: { type: 'sync', url } }, '*');
@@ -47,18 +43,13 @@
         const msg = event.data.pluginMessage;
         if (!msg) return;
         if (msg.type === 'status') statusEl.textContent = msg.message;
-        if (msg.type === 'auth-link') {
-          const linkEl = document.getElementById('auth-link');
-          if (msg.url) {
-            linkEl.innerHTML = `Auth link: <a href="${msg.url}" target="_blank" rel="noopener noreferrer">${msg.url}</a>`;
-            document.getElementById('auth-link-btn').style.display = 'block';
-            document.getElementById('open-auth-link').onclick = () => window.open(msg.url, '_blank');
-          } else {
-            linkEl.textContent = '';
-            document.getElementById('auth-link-btn').style.display = 'none';
-          }
+        if (msg.type === 'auth-status') {
+          isAuthorized = !!msg.authorized;
+          updatePrimary();
         }
       };
+
+      parent.postMessage({ pluginMessage: { type: 'init' } }, '*');
     </script>
   </body>
 </html>
