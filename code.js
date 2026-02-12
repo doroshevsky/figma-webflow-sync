@@ -29,7 +29,7 @@ figma.ui.onmessage = async (msg) => {
     try {
       const authorized = await checkAuthorized(BACKEND_URL);
       figma.ui.postMessage({ type: 'auth-status', authorized });
-    } catch {
+    } catch (err) {
       figma.ui.postMessage({ type: 'auth-status', authorized: false });
     }
     return;
