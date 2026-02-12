@@ -16,10 +16,11 @@
        style="display:inline-block; padding:8px 12px; border:1px solid #333; border-radius:4px; color:#000; text-decoration:none; background:#fff; text-align:center; width: fit-content;">
       Connect Webflow
     </a>
-    <div id="auth-hint" style="margin-top:6px; font-size:11px; color:#666; display:none;">
+    <div id="auth-hint" style="margin-top:6px; font-size:11px; color:#666;">
       If the window doesn't open, click this link:
-      <a id="auth-link" href="#" target="_blank" rel="noopener noreferrer">Open Webflow Auth</a>
+      <a id="auth-link" href="https://figma-webflow-sync.onrender.com/auth/start" target="_blank" rel="noopener noreferrer">Open Webflow Auth</a>
     </div>
+    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v9</div>
     <button id="sync-btn" style="display:none;">Sync from Webflow</button>
     <div id="status">Ready.</div>
 
@@ -28,7 +29,6 @@
       const authBtn = document.getElementById('auth-link-btn');
       const syncBtn = document.getElementById('sync-btn');
       const urlWrap = document.getElementById('url-wrap');
-      const authHint = document.getElementById('auth-hint');
       const authLink = document.getElementById('auth-link');
       let isAuthorized = false;
       let authUrl = '';
@@ -38,14 +38,12 @@
           authBtn.style.display = 'none';
           syncBtn.style.display = 'inline-block';
           urlWrap.style.display = 'block';
-          authHint.style.display = 'none';
         } else {
           syncBtn.style.display = 'none';
           authBtn.style.display = 'inline-block';
           urlWrap.style.display = 'none';
           authBtn.setAttribute('href', authUrl || '#');
           authBtn.style.pointerEvents = authUrl ? 'auto' : 'none';
-          authHint.style.display = authUrl ? 'block' : 'none';
         }
       }
 
