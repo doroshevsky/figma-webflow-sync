@@ -161,7 +161,7 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const opts = options ? { ...options } : {};
+    const opts = options ? Object.assign({}, options) : {};
     opts.signal = controller.signal;
     return await fetch(url, opts);
   } finally {
@@ -295,8 +295,8 @@ function reorderSections(sectionOrder) {
   const orderedNodes = sectionOrder.map((name) => byName.get(name)).filter(Boolean);
   if (!orderedNodes.length) return;
 
-  const baseX = Math.min(...orderedNodes.map((n) => n.x));
-  const baseY = Math.min(...orderedNodes.map((n) => n.y));
+  const baseX = Math.min.apply(null, orderedNodes.map((n) => n.x));
+  const baseY = Math.min.apply(null, orderedNodes.map((n) => n.y));
 
   let y = baseY;
   for (const node of orderedNodes) {
