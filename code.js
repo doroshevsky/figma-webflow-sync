@@ -108,13 +108,10 @@ async function fetchWebflowDom(baseUrl, pageId) {
     const cleanedBase =
       baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
     const url = cleanedBase + '/dom?pageId=' + encodeURIComponent(pageId);
-    res = await fetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    res = await fetchWithTimeout(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } }, 30000);
   } catch (err) {
     throw new Error(
-      'Network error while calling backend. Check BACKEND_URL and Render deployment.'
+      'Network error while calling backend (timeout). Render free instances can be slow to wake up. Try again or refresh auth.'
     );
   }
 
@@ -130,7 +127,11 @@ async function resolvePageId(baseUrl, pageUrl) {
   const cleanedBase =
     baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
   const url = cleanedBase + '/resolve?url=' + encodeURIComponent(pageUrl);
-  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+  const res = await fetchWithTimeout(
+    url,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+    30000
+  );
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Resolve error ${res.status}: ${text}`);
@@ -144,11 +145,25 @@ async function ensureAuthorized(baseUrl) {
   const cleanedBase =
     baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
   const url = cleanedBase + '/auth/status';
-  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+  const res = await fetchWithTimeout(
+    url,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+    15000
+  );
   if (!res.ok) throw new Error('Auth status check failed.');
   const data = await res.json();
   if (!data.authorized) {
     throw new Error('Not connected to Webflow. Click "Connect Webflow" first.');
+  }
+}
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
   }
 }
 
