@@ -20,7 +20,7 @@ const REBUILD_SECTIONS = true; // when true, remove existing sections and re-imp
 figma.showUI(__html__, { width: 260, height: 120 });
 
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'connect') {
+  if (msg.type === 'connect' || msg.type === 'open-auth') {
     if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
       figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });
       return;
@@ -30,7 +30,8 @@ figma.ui.onmessage = async (msg) => {
     const authUrl = `${cleanedBase}/auth/start`;
     figma.ui.postMessage({ type: 'auth-link', url: authUrl });
     figma.openURL(authUrl);
-    figma.ui.postMessage({ type: 'status', message: 'Complete auth in browser, then retry sync.' });
+    figma.ui.postMessage({ type: 'status', message: 'Waiting for Webflow authorization...' });
+    pollAuthStatus(cleanedBase, 0);
     return;
   }
   if (msg.type === 'get-key') {
@@ -167,6 +168,30 @@ async function fetchWithTimeout(url, options, timeoutMs) {
   } finally {
     clearTimeout(id);
   }
+}
+
+function pollAuthStatus(baseUrl, attempt) {
+  if (attempt > 30) {
+    figma.ui.postMessage({
+      type: 'status',
+      message: 'Auth not completed yet. Please finish in browser and try Sync.',
+    });
+    return;
+  }
+
+  const url = baseUrl + '/auth/status';
+  fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data && data.authorized) {
+        figma.ui.postMessage({ type: 'status', message: 'Webflow connected. You can sync now.' });
+        return;
+      }
+      setTimeout(() => pollAuthStatus(baseUrl, attempt + 1), 1000);
+    })
+    .catch(() => {
+      setTimeout(() => pollAuthStatus(baseUrl, attempt + 1), 1000);
+    });
 }
 
 function parseDom(dom) {

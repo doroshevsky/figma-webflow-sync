@@ -13,6 +13,7 @@
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
     <button id="connect">Connect Webflow</button>
+    <button id="open-auth">Open Auth Link</button>
     <button id="sync">Sync from Webflow</button>
     <button id="get-key">Get component key</button>
     <div id="status">Ready.</div>
@@ -23,6 +24,10 @@
       document.getElementById('connect').onclick = () => {
         statusEl.textContent = 'Opening Webflow auth...';
         parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
+      };
+      document.getElementById('open-auth').onclick = () => {
+        statusEl.textContent = 'Opening Webflow auth...';
+        parent.postMessage({ pluginMessage: { type: 'open-auth' } }, '*');
       };
 
       document.getElementById('sync').onclick = () => {
