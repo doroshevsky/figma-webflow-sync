@@ -20,6 +20,17 @@ const REBUILD_SECTIONS = true; // when true, remove existing sections and re-imp
 figma.showUI(__html__, { width: 260, height: 120 });
 
 figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'connect') {
+    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
+      figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });
+      return;
+    }
+    const cleanedBase =
+      BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+    figma.openURL(`${cleanedBase}/auth/start`);
+    figma.ui.postMessage({ type: 'status', message: 'Complete auth in browser, then retry sync.' });
+    return;
+  }
   if (msg.type === 'get-key') {
     const selection = figma.currentPage.selection;
     if (!selection.length) {
@@ -60,6 +71,7 @@ figma.ui.onmessage = async (msg) => {
       throw new Error('Paste a Webflow page URL in the input field.');
     }
 
+    await ensureAuthorized(BACKEND_URL);
     figma.ui.postMessage({ type: 'status', message: 'Resolving page ID...' });
     const pageId = await resolvePageId(BACKEND_URL, pageUrl);
 
@@ -124,6 +136,18 @@ async function resolvePageId(baseUrl, pageUrl) {
   const data = await res.json();
   if (!data.pageId) throw new Error('Resolve error: pageId not found');
   return data.pageId;
+}
+
+async function ensureAuthorized(baseUrl) {
+  const cleanedBase =
+    baseUrl && baseUrl[baseUrl.length - 1] === '/' ? baseUrl.slice(0, -1) : baseUrl;
+  const url = cleanedBase + '/auth/status';
+  const res = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) throw new Error('Auth status check failed.');
+  const data = await res.json();
+  if (!data.authorized) {
+    throw new Error('Not connected to Webflow. Click "Connect Webflow" first.');
+  }
 }
 
 function parseDom(dom) {

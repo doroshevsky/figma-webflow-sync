@@ -12,12 +12,18 @@
     <div style="margin-bottom: 8px;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
+    <button id="connect">Connect Webflow</button>
     <button id="sync">Sync from Webflow</button>
     <button id="get-key">Get component key</button>
     <div id="status">Ready.</div>
 
     <script>
       const statusEl = document.getElementById('status');
+      document.getElementById('connect').onclick = () => {
+        statusEl.textContent = 'Opening Webflow auth...';
+        parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
+      };
+
       document.getElementById('sync').onclick = () => {
         const url = document.getElementById('url').value.trim();
         statusEl.textContent = 'Syncing...';
