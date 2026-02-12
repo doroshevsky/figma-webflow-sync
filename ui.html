@@ -12,39 +12,38 @@
     <div style="margin-bottom: 8px;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
-    <a id="auth-anchor" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
-      <button id="primary">Connect Webflow</button>
+    <a id="auth-link-btn" href="#" target="_blank" rel="noopener noreferrer"
+       style="display:inline-block; padding:8px 12px; border:1px solid #333; border-radius:4px; color:#000; text-decoration:none; background:#fff; text-align:center; width: fit-content;">
+      Connect Webflow
     </a>
+    <button id="sync-btn" style="display:none;">Sync from Webflow</button>
     <div id="status">Ready.</div>
 
     <script>
       const statusEl = document.getElementById('status');
-      const primaryBtn = document.getElementById('primary');
+      const authBtn = document.getElementById('auth-link-btn');
+      const syncBtn = document.getElementById('sync-btn');
       let isAuthorized = false;
       let authUrl = '';
 
       function updatePrimary() {
-        primaryBtn.textContent = isAuthorized ? 'Sync from Webflow' : 'Connect Webflow';
-        const anchor = document.getElementById('auth-anchor');
         if (isAuthorized) {
-          anchor.setAttribute('href', '#');
-          anchor.style.pointerEvents = 'none';
+          authBtn.style.display = 'none';
+          syncBtn.style.display = 'inline-block';
         } else {
-          anchor.setAttribute('href', authUrl || '#');
-          anchor.style.pointerEvents = authUrl ? 'auto' : 'none';
+          syncBtn.style.display = 'none';
+          authBtn.style.display = 'inline-block';
+          authBtn.setAttribute('href', authUrl || '#');
+          authBtn.style.pointerEvents = authUrl ? 'auto' : 'none';
         }
       }
 
-      primaryBtn.onclick = () => {
-        if (!isAuthorized) {
-          statusEl.textContent = 'Opening Webflow auth...';
-          if (authUrl) {
-            parent.postMessage({ pluginMessage: { type: 'start-auth' } }, '*');
-          } else {
-            parent.postMessage({ pluginMessage: { type: 'connect' } }, '*');
-          }
-          return;
-        }
+      authBtn.onclick = () => {
+        statusEl.textContent = 'Opening Webflow auth...';
+        parent.postMessage({ pluginMessage: { type: 'start-auth' } }, '*');
+      };
+
+      syncBtn.onclick = () => {
         const url = document.getElementById('url').value.trim();
         statusEl.textContent = 'Syncing...';
         parent.postMessage({ pluginMessage: { type: 'sync', url } }, '*');
