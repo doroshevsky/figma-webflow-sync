@@ -49,6 +49,35 @@ app.get('/dom', async (req, res) => {
   }
 });
 
+app.get('/sites', async (req, res) => {
+  try {
+    if (!WEBFLOW_TOKEN) {
+      return res.status(500).json({ error: 'WEBFLOW_TOKEN is not set on the server.' });
+    }
+
+    const sitesResp = await fetch('https://api.webflow.com/v2/sites', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${WEBFLOW_TOKEN}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    const sitesText = await sitesResp.text();
+    if (!sitesResp.ok) {
+      return res.status(sitesResp.status).send(sitesText);
+    }
+
+    const sites = JSON.parse(sitesText).sites || [];
+    return res.json({
+      count: sites.length,
+      sites: sites.map((s) => ({ id: s.id, shortName: s.shortName, displayName: s.displayName })),
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
 app.get('/resolve', async (req, res) => {
   try {
     if (!WEBFLOW_TOKEN) {
