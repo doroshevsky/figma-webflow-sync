@@ -16,7 +16,7 @@
        style="display:inline-block; color:#000; text-decoration:underline; font-size:13px;">
       Connect Webflow
     </a>
-    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v10</div>
+    <div id="version" style="margin-top:6px; font-size:10px; color:#999;">UI v11</div>
     <button id="sync-btn" style="display:none;">Sync from Webflow</button>
     <div id="status">Ready.</div>
 
@@ -40,6 +40,11 @@
           authLink.setAttribute('href', authUrl || 'https://figma-webflow-sync.onrender.com/auth/start');
         }
       }
+
+      authLink.addEventListener('click', () => {
+        statusEl.textContent = 'Opening Webflow auth...';
+        parent.postMessage({ pluginMessage: { type: 'start-auth' } }, '*');
+      });
 
       syncBtn.onclick = () => {
         const url = document.getElementById('url').value.trim();
