@@ -16,6 +16,7 @@
     <button id="sync">Sync from Webflow</button>
     <button id="get-key">Get component key</button>
     <div id="status">Ready.</div>
+    <div id="auth-link" style="margin-top:6px; font-size:11px; color:#666;"></div>
 
     <script>
       const statusEl = document.getElementById('status');
@@ -38,6 +39,10 @@
         const msg = event.data.pluginMessage;
         if (!msg) return;
         if (msg.type === 'status') statusEl.textContent = msg.message;
+        if (msg.type === 'auth-link') {
+          const linkEl = document.getElementById('auth-link');
+          linkEl.textContent = msg.url ? `Auth link: ${msg.url}` : '';
+        }
       };
     </script>
   </body>

@@ -27,7 +27,9 @@ figma.ui.onmessage = async (msg) => {
     }
     const cleanedBase =
       BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-    figma.openURL(`${cleanedBase}/auth/start`);
+    const authUrl = `${cleanedBase}/auth/start`;
+    figma.ui.postMessage({ type: 'auth-link', url: authUrl });
+    figma.openURL(authUrl);
     figma.ui.postMessage({ type: 'status', message: 'Complete auth in browser, then retry sync.' });
     return;
   }
