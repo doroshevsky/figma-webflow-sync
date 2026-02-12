@@ -70,6 +70,11 @@ app.get('/resolve', async (req, res) => {
     const path = parsed.pathname && parsed.pathname !== '' ? parsed.pathname : '/';
 
     let siteId = WEBFLOW_SITE_ID;
+    const host = parsed.host || '';
+    const subdomain = host.endsWith('.webflow.io')
+      ? host.replace('.webflow.io', '')
+      : null;
+
     if (!siteId) {
       const sitesResp = await fetch('https://api.webflow.com/v2/sites', {
         method: 'GET',
@@ -85,7 +90,17 @@ app.get('/resolve', async (req, res) => {
       }
       const sites = JSON.parse(sitesText).sites || [];
       if (!sites.length) return res.status(404).json({ error: 'No sites found.' });
-      siteId = sites[0].id;
+
+      if (subdomain) {
+        const matchSite = sites.find((s) => s.shortName === subdomain);
+        if (matchSite) {
+          siteId = matchSite.id;
+        }
+      }
+
+      if (!siteId) {
+        siteId = sites[0].id;
+      }
     }
 
     const pagesResp = await fetch(`https://api.webflow.com/v2/sites/${siteId}/pages`, {
