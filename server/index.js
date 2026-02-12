@@ -58,9 +58,22 @@ app.get('/auth/start', (req, res) => {
     'https://webflow.com/oauth/authorize' +
     `?client_id=${encodeURIComponent(WEBFLOW_CLIENT_ID)}` +
     `&redirect_uri=${encodeURIComponent(WEBFLOW_REDIRECT_URI)}` +
-    '&response_type=code';
+    '&response_type=code' +
+    '&scope=sites:read+pages:read';
 
   return res.redirect(authUrl);
+});
+
+app.get('/auth/reset', (req, res) => {
+  try {
+    oauthToken = null;
+    if (fs.existsSync(TOKEN_FILE)) {
+      fs.unlinkSync(TOKEN_FILE);
+    }
+    return res.send('OAuth token cleared. Please re-authorize.');
+  } catch (err) {
+    return res.status(500).send(err.message || 'Failed to clear token.');
+  }
 });
 
 app.get('/auth/callback', async (req, res) => {
