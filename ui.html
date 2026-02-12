@@ -9,7 +9,7 @@
     </style>
   </head>
   <body>
-    <div style="margin-bottom: 8px;">
+    <div id="url-wrap" style="margin-bottom: 8px; display:none;">
       <input id="url" type="text" placeholder="Paste Webflow page URL" style="width: 100%; padding: 6px; box-sizing: border-box;" />
     </div>
     <a id="auth-link-btn" href="#" target="_blank" rel="noopener noreferrer"
@@ -23,6 +23,7 @@
       const statusEl = document.getElementById('status');
       const authBtn = document.getElementById('auth-link-btn');
       const syncBtn = document.getElementById('sync-btn');
+      const urlWrap = document.getElementById('url-wrap');
       let isAuthorized = false;
       let authUrl = '';
 
@@ -30,9 +31,11 @@
         if (isAuthorized) {
           authBtn.style.display = 'none';
           syncBtn.style.display = 'inline-block';
+          urlWrap.style.display = 'block';
         } else {
           syncBtn.style.display = 'none';
           authBtn.style.display = 'inline-block';
+          urlWrap.style.display = 'none';
           authBtn.setAttribute('href', authUrl || '#');
           authBtn.style.pointerEvents = authUrl ? 'auto' : 'none';
         }
