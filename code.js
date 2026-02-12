@@ -29,6 +29,9 @@ figma.ui.onmessage = async (msg) => {
     try {
       const authorized = await checkAuthorized(BACKEND_URL);
       figma.ui.postMessage({ type: 'auth-status', authorized });
+      const cleanedBase =
+        BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+      figma.ui.postMessage({ type: 'auth-link', url: `${cleanedBase}/auth/start` });
     } catch (err) {
       figma.ui.postMessage({ type: 'auth-status', authorized: false });
     }
@@ -44,6 +47,18 @@ figma.ui.onmessage = async (msg) => {
       BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
     const authUrl = `${cleanedBase}/auth/start`;
     figma.ui.postMessage({ type: 'auth-link', url: authUrl });
+    figma.ui.postMessage({ type: 'status', message: 'Waiting for Webflow authorization...' });
+    pollAuthStatus(cleanedBase, 0);
+    return;
+  }
+
+  if (msg.type === 'start-auth') {
+    if (!BACKEND_URL || BACKEND_URL.indexOf('YOUR-RENDER-URL') !== -1) {
+      figma.ui.postMessage({ type: 'status', message: 'Set BACKEND_URL in code.js' });
+      return;
+    }
+    const cleanedBase =
+      BACKEND_URL && BACKEND_URL[BACKEND_URL.length - 1] === '/' ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
     figma.ui.postMessage({ type: 'status', message: 'Waiting for Webflow authorization...' });
     pollAuthStatus(cleanedBase, 0);
     return;
