@@ -18,6 +18,9 @@
     <button id="get-key">Get component key</button>
     <div id="status">Ready.</div>
     <div id="auth-link" style="margin-top:6px; font-size:11px; color:#666;"></div>
+    <div id="auth-link-btn" style="margin-top:6px; display:none;">
+      <button id="open-auth-link">Open Auth in Browser</button>
+    </div>
 
     <script>
       const statusEl = document.getElementById('status');
@@ -46,7 +49,14 @@
         if (msg.type === 'status') statusEl.textContent = msg.message;
         if (msg.type === 'auth-link') {
           const linkEl = document.getElementById('auth-link');
-          linkEl.textContent = msg.url ? `Auth link: ${msg.url}` : '';
+          if (msg.url) {
+            linkEl.innerHTML = `Auth link: <a href="${msg.url}" target="_blank" rel="noopener noreferrer">${msg.url}</a>`;
+            document.getElementById('auth-link-btn').style.display = 'block';
+            document.getElementById('open-auth-link').onclick = () => window.open(msg.url, '_blank');
+          } else {
+            linkEl.textContent = '';
+            document.getElementById('auth-link-btn').style.display = 'none';
+          }
         }
       };
     </script>
